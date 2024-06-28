@@ -11,7 +11,8 @@ cstm_logger = create_logger(__name__)
 app = Flask(__name__)
 cstm_logger.info("Check connect ability")
 try:
-    db_serv = DatabaseService(cstm_logger)
+    secret_vault_service = SecretVaultController()
+    db_serv = DatabaseService(cstm_logger, secret_vault_service)
     res = db_serv.check_readability()
     cstm_logger.exception(f"Logger Successfully connect to cassandra. Data: {res}")
 except NoHostAvailable as e:

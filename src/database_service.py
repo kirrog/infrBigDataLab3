@@ -20,14 +20,15 @@ def is_cassandra_connectable(ip: str, port: int) -> bool:
 
 
 class DatabaseService:
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, secret_vault_controller_instance: SecretVaultController):
         self.logger = logger
-        self.port = os.environ.get('CASSANDRA_PORT', 9042)
+        self.port = secret_vault_controller_instance.get_db_port()
         self.keyspace = os.environ.get('CASSANDRA_KEYSPACE', "sampledata")
         ips = self.balance_fake_load()
         self.cluster = Cluster(ips, port=self.port,
-                               auth_provider=PlainTextAuthProvider(username=os.environ.get('CASSANDRA_USERNAME'),
-                                                                   password=os.environ.get('CASSANDRA_PASSWORD')))
+                               auth_provider=PlainTextAuthProvider(
+                                   username=secret_vault_controller_instance.get_db_username(),
+                                   password=secret_vault_controller_instance.get_db_password()))
         self.session = self.cluster.connect(self.keyspace, wait_for_all_pools=False)
         self.session.execute(f'USE {self.keyspace}')
 
